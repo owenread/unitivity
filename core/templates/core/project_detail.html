@@ -1,0 +1,41 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>{{ project.title }} - Details</title>
+    <meta name="author" content="Owen Read">
+    <meta name="description"
+        content="Discover new and exciting projects and be a captain on the flagship of innovation!">
+    <link rel="stylesheet" href="{% static 'core/styles.css' %}">
+</head>
+
+<body>
+    <header>
+        <nav>
+            <a href="/">← Back to Feed</a> |
+            <a href="/profile/">My Profile</a>
+        </nav>
+    </header>
+    <hr>
+
+    {% if project %}
+    <h1>{{ project.title }}</h1>
+    <p><strong>Owner:</strong> {{ project.creator }}</p>
+    <p><strong>Description:</strong> {{ project.description }}</p>
+    <h3>Progress: {{ project.progress }}</h3>
+    <p><strong>Timeline Status:</strong> {{ project.timeline }}</p>
+
+    <h3>Collaborators:</h3>
+    <ul>
+        {% for member in project.collaborators %}
+        <li>{{ member }}</li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p>Project not found.</p>
+    {% endif %}
+</body>
+
+</html>

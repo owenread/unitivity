@@ -1,0 +1,40 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Discovery Feed</title>
+    <meta name="author" content="Owen Read"> 
+    <meta name="description" content="Discover new and exciting projects and be a captain on the flagship of innovation!">
+    <link rel="stylesheet" href="{% static 'core/styles.css' %}">
+</head>
+
+<body>
+    <header>
+        <h1>Project Discovery Feed</h1>
+        <nav>
+            <a href="/">Feed</a> |
+            <a href="/profile/">My Profile</a>
+        </nav>
+    </header>
+    <hr>
+
+    {% for proj in projects %}
+    <article style="border: 1px solid #ccc; padding: 15px; margin-bottom: 15px; border-radius: 5px;">
+        <h2><a href="/project/{{ proj.id }}/">{{ proj.title }}</a></h2>
+        <p><strong>Creator:</strong> {{ proj.creator }}</p>
+        <p>{{ proj.description }}</p>
+        <p><strong>Likes:</strong> {{ proj.likes }}</p>
+
+        <form method="POST" style="display:inline;">
+            {% csrf_token %}
+            <input type="hidden" name="project_id" value="{{ proj.id }}">
+            <button type="submit" name="action" value="like">👍 Like</button>
+            <button type="submit" name="action" value="join">🤝 Join Project</button>
+        </form>
+    </article>
+    {% endfor %}
+</body>
+
+</html>
