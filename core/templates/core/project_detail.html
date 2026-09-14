@@ -1,41 +1,50 @@
-{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="UTF-8">
-    <title>{{ project.title }} - Details</title>
-    <meta name="author" content="Owen Read">
-    <meta name="description"
-        content="Discover new and exciting projects and be a captain on the flagship of innovation!">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ project.title|default:"Project Details" }} - Unitivity</title>
+    {% load static %}
     <link rel="stylesheet" href="{% static 'core/styles.css' %}">
 </head>
 
 <body>
     <header>
+        <h1>Unitivity</h1>
         <nav>
-            <a href="/">← Back to Feed</a> |
-            <a href="/profile/">My Profile</a>
+            <a href="{% url 'discovery_feed' %}">Discovery</a> |
+            <a href="{% url 'profile' %}">My Profile</a>
         </nav>
     </header>
-    <hr>
 
-    {% if project %}
-    <h1>{{ project.title }}</h1>
-    <p><strong>Owner:</strong> {{ project.creator }}</p>
-    <p><strong>Description:</strong> {{ project.description }}</p>
-    <h3>Progress: {{ project.progress }}</h3>
-    <p><strong>Timeline Status:</strong> {{ project.timeline }}</p>
+    <main>
+        <!-- Fallback Verification: Checks if target project object exists -->
+        {% if project %}
+        <article>
+            <h2>{{ project.title }}</h2>
+            <p><strong>Lead Creator:</strong> {{ project.creator }}</p>
+            <p><strong>Project Overview:</strong> {{ project.description }}</p>
+            <p><strong>Current Timeline:</strong> {{ project.timeline }}</p>
+            <p><strong>Development Progress:</strong> {{ project.progress }}</p>
+            <p><strong>Total Likes:</strong> {{ project.likes }}</p>
 
-    <h3>Collaborators:</h3>
-    <ul>
-        {% for member in project.collaborators %}
-        <li>{{ member }}</li>
-        {% endfor %}
-    </ul>
-    {% else %}
-    <p>Project not found.</p>
-    {% endif %}
+            <h3>Active Team Members</h3>
+            <ul>
+                {% for member in project.collaborators %}
+                <li>{{ member }}</li>
+                {% empty %}
+                <li>No collaborators listed yet. Be the first to join!</li>
+                {% endfor %}
+            </ul>
+        </article>
+        {% else %}
+        <h2>Project Not Found</h2>
+        <p>The requested project detail page could not be located.</p>
+        {% endif %}
+
+        <p><a href="{% url 'discovery_feed' %}">&larr; Return to Discovery Feed</a></p>
+    </main>
 </body>
 
 </html>

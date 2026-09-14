@@ -16,10 +16,18 @@ Including another URLconf
 
     Leaving this in the code intentionally for future use and callback
 """
+"""
+Root URL Configuration for the 'mysite' Django project.
+Includes app-level routing modules into the top-level URL dispatcher.
+"""
+
 from django.contrib import admin
 from django.urls import path, include
 
 urlpatterns = [
+    # Built-in Django administrative panel interface
     path('admin/', admin.site.urls),
+    
+    # Delegates all root paths directly to the core application's urls.py
     path('', include('core.urls')),
 ]

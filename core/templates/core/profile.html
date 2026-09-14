@@ -1,51 +1,73 @@
-{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="UTF-8">
-    <title>User Profile</title>
-    <meta name="author" content="Owen Read">
-    <meta name="description" content="Discover new and exciting projects and be a captain on the flagship of innovation!">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ profile.name }}'s Profile - Unitivity</title>
+    {% load static %}
     <link rel="stylesheet" href="{% static 'core/styles.css' %}">
 </head>
 
 <body>
     <header>
+        <h1>Unitivity</h1>
         <nav>
-            <a href="/">← Back to Feed</a>
+            <a href="{% url 'discovery_feed' %}">Discovery</a> |
+            <a href="{% url 'profile' %}">My Profile</a>
         </nav>
     </header>
-    <hr>
 
-    <h1>User Profile</h1>
-    <p><strong>Name:</strong> {{ profile.name }}</p>
-    <p><strong>Role:</strong> {{ profile.role }}</p>
-    <p><strong>Bio:</strong> {{ profile.bio }}</p>
+    <main>
+        {% if messages %}
+        <div class="messages-container">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
 
-    <h3>Edit Profile Information</h3>
-    <form method="POST">
-        {% csrf_token %}
-        <label>Name:<br>
-            <input type="text" name="name" value="{{ profile.name }}">
-        </label><br><br>
+        <h2>User Profile</h2>
 
-        <label>Bio:<br>
-            <textarea name="bio" rows="4" cols="40">{{ profile.bio }}</textarea>
-        </label><br><br>
+        <!-- Profile Display Section -->
+        <article>
+            <h3>{{ profile.name }}</h3>
+            <p><strong>Role:</strong> {{ profile.role }}</p>
+            <p><strong>Bio:</strong> {{ profile.bio }}</p>
+        </article>
 
-        <button type="submit">Save Changes</button>
-    </form>
+        <!-- Profile Update Form: Demonstrates POST form handling -->
+        <h3>Update Profile Information</h3>
+        <form method="POST">
+            {% csrf_token %}
+            <div>
+                <label for="name">Display Name:</label>
+                <input type="text" id="name" name="name" value="{{ profile.name }}" required>
+            </div>
+            <div style="margin-top: 1rem;">
+                <label for="bio">Biography / Skills:</label>
+                <textarea id="bio" name="bio" rows="4" required>{{ profile.bio }}</textarea>
+            </div>
+            <button type="submit" style="margin-top: 1rem;">Save Changes</button>
+        </form>
 
-    <hr>
-    <h3>My Created Projects</h3>
-    <ul>
-        {% for proj in my_projects %}
-        <li>
-            <a href="/project/{{ proj.id }}/">{{ proj.title }}</a> — Status: {{ proj.progress }}
-        </li>
-        {% endfor %}
-    </ul>
+        <hr style="margin: 2rem 0;">
+
+        <!-- Filtered User Projects Section -->
+        <h3>Associated Projects</h3>
+        <ul>
+            {% for project in my_projects %}
+            <li>
+                <a href="{% url 'project_detail' project.id %}">{{ project.title }}</a>
+                - Role: {% if project.creator == profile.name %}Lead Creator{% else %}Collaborator{% endif %}
+            </li>
+            {% empty %}
+            <li>You are not currently associated with any active projects.</li>
+            {% endfor %}
+        </ul>
+    </main>
 </body>
 
 </html>

@@ -1,40 +1,74 @@
-{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="UTF-8">
-    <title>Discovery Feed</title>
-    <meta name="author" content="Owen Read"> 
-    <meta name="description" content="Discover new and exciting projects and be a captain on the flagship of innovation!">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unitivity - Discovery Feed</title>
+    <!-- Load static template tag library to handle local CSS asset paths -->
+    {% load static %}
     <link rel="stylesheet" href="{% static 'core/styles.css' %}">
 </head>
 
 <body>
+    <!-- Site Navigation & Header -->
     <header>
-        <h1>Project Discovery Feed</h1>
+        <h1>Unitivity</h1>
         <nav>
-            <a href="/">Feed</a> |
-            <a href="/profile/">My Profile</a>
+            <a href="{% url 'discovery_feed' %}">Discovery</a> |
+            <a href="{% url 'profile' %}">My Profile</a>
         </nav>
     </header>
-    <hr>
 
-    {% for proj in projects %}
-    <article style="border: 1px solid #ccc; padding: 15px; margin-bottom: 15px; border-radius: 5px;">
-        <h2><a href="/project/{{ proj.id }}/">{{ proj.title }}</a></h2>
-        <p><strong>Creator:</strong> {{ proj.creator }}</p>
-        <p>{{ proj.description }}</p>
-        <p><strong>Likes:</strong> {{ proj.likes }}</p>
+    <main>
+        <!-- Django Flash Messages Section: Displays action confirmation banners -->
+        {% if messages %}
+        <div class="messages-container">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
 
-        <form method="POST" style="display:inline;">
-            {% csrf_token %}
-            <input type="hidden" name="project_id" value="{{ proj.id }}">
-            <button type="submit" name="action" value="like">👍 Like</button>
-            <button type="submit" name="action" value="join">🤝 Join Project</button>
-        </form>
-    </article>
-    {% endfor %}
+        <h2>Project Discovery Feed</h2>
+        <p>Explore projects looking for active collaborators. Like a project or join the team below!</p>
+
+        <!-- Dynamic Loop: Iterates over the list of project dictionaries passed from discovery_feed view -->
+        {% for project in projects %}
+        <article>
+            <h3>
+                <!-- Detail View Link: Passes project.id as a URL parameter to render the specific project route -->
+                <a href="{% url 'project_detail' project.id %}">{{ project.title }}</a>
+            </h3>
+            <p><strong>Created by:</strong> {{ project.creator }}</p>
+            <p>{{ project.description }}</p>
+            <p>
+                <strong>Likes:</strong> {{ project.likes }} |
+                <strong>Collaborators:</strong>
+                {% for member in project.collaborators %}
+                {{ member }}{% if not forloop.last %}, {% endif %}
+                {% empty %}
+                None
+                {% endfor %}
+            </p>
+
+            <!-- Interactive Form: Submits POST actions to trigger like or join logic in views.py -->
+            <form method="POST">
+                {% csrf_token %}
+                <!-- Hidden field tracking which project target receives the action -->
+                <input type="hidden" name="project_id" value="{{ project.id }}">
+
+                <!-- Action Buttons: Evaluated by views.py via request.POST.get('action') -->
+                <button type="submit" name="action" value="like">👍 Like</button>
+                <button type="submit" name="action" value="join">🤝 Join Project</button>
+            </form>
+        </article>
+        {% empty %}
+        <p>No projects found at this time.</p>
+        {% endfor %}
+    </main>
 </body>
 
 </html>
