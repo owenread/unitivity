@@ -27,7 +27,7 @@ PROJECTS = [
         'likes': 8,
         'progress': '40%',
         'timeline': 'Phase 2: Prototyping',
-        'collaborators': ['Sam']
+        'collaborators': ['Sam', "Jared", "Linda"]
     },
     {
         'id': 3,

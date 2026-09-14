@@ -6,7 +6,7 @@ Unitivity is a web platform designed to connect project creators with collaborat
 
 I created this software to practice building clean, scalable Model-View-Template (MVT) web architecture and to refine my frontend CSS layout skills within a modern web framework.
 
-[Software Demo Video](http://youtube.link.goes.here)
+[Software Demo Video](https://youtu.be/58SHd3aTunI)
 
 # Development Environment
 
