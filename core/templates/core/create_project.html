@@ -1,0 +1,67 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unitivity - New Project</title>
+    <link rel="stylesheet" href="{% static 'core/styles.css' %}">
+</head>
+
+<body>
+    <header>
+        <h1>Unitivity</h1>
+        <nav>
+            <a href="{% url 'discovery_feed' %}">Discovery</a> |
+            <a href="{% url 'profile' %}">My Profile</a>
+        </nav>
+    </header>
+
+    <main>
+        {% if messages %}
+        <div class="messages-container">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <h2>Start a New Project</h2>
+        <p>Post your initiative to find collaborators across the platform.</p>
+
+        <form method="POST" style="max-width: 600px; display: flex; flex-direction: column; gap: 1rem;">
+            {% csrf_token %}
+            <div>
+                <label for="title"><strong>Project Title:</strong></label><br>
+                <input type="text" id="title" name="title" required
+                    style="width: 100%; padding: 0.5rem; margin-top: 0.25rem;">
+            </div>
+
+            <div>
+                <label for="description"><strong>Description:</strong></label><br>
+                <textarea id="description" name="description" rows="5" required
+                    style="width: 100%; padding: 0.5rem; margin-top: 0.25rem;"></textarea>
+            </div>
+
+            <div>
+                <label for="timeline"><strong>Current Timeline / Phase:</strong></label><br>
+                <input type="text" id="timeline" name="timeline" value="Phase 1: Planning"
+                    style="width: 100%; padding: 0.5rem; margin-top: 0.25rem;">
+            </div>
+
+            <div>
+                <label for="progress"><strong>Initial Progress (0 - 100%):</strong></label><br>
+                <input type="number" id="progress" name="progress" min="0" max="100" value="0"
+                    style="width: 120px; padding: 0.5rem; margin-top: 0.25rem;">
+            </div>
+
+            <div style="display: flex; gap: 1rem; align-items: center; margin-top: 0.5rem;">
+                <button type="submit" style="padding: 0.6rem 1.25rem; cursor: pointer;">Publish Project</button>
+                <a href="{% url 'discovery_feed' %}">Cancel</a>
+            </div>
+        </form>
+    </main>
+</body>
+
+</html>

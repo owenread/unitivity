@@ -22,16 +22,29 @@
         {% if messages %}
         <div class="messages-container">
             {% for message in messages %}
-            <div class="alert alert-{{ message.tags }}">
-                {{ message }}
-            </div>
+            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
             {% endfor %}
         </div>
         {% endif %}
 
         {% if project %}
         <article>
-            <h2>{{ project.title }}</h2>
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <h2>{{ project.title }}</h2>
+
+                <!-- Delete Project Button (Creator or Superuser only) -->
+                {% if project.creator == current_user or current_user.is_superuser %}
+                <form action="{% url 'delete_project' project.id %}" method="POST"
+                    onsubmit="return confirm('Are you sure you want to permanently delete this project?');">
+                    {% csrf_token %}
+                    <button type="submit"
+                        style="background: #dc2626; color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer;">
+                        Delete Project
+                    </button>
+                </form>
+                {% endif %}
+            </div>
+
             <p><strong>Lead Creator:</strong> {{ project.creator.get_full_name|default:project.creator.username }}</p>
             <p><strong>Project Overview:</strong> {{ project.description }}</p>
             <p><strong>Current Timeline:</strong> {{ project.timeline }}</p>
@@ -40,7 +53,6 @@
 
             <h3>Active Team Members</h3>
             <ul>
-                <!-- .all converts the ManyRelatedManager to an iterable queryset -->
                 {% for member in project.collaborators.all %}
                 <li>{{ member.get_full_name|default:member.username }}</li>
                 {% empty %}
@@ -48,7 +60,6 @@
                 {% endfor %}
             </ul>
 
-            <!-- Project Comments Thread -->
             <h3>Discussion</h3>
             <div class="comments-section">
                 {% for comment in project.comments.all %}

@@ -10,7 +10,6 @@
 </head>
 
 <body>
-    <!-- Site Navigation & Header -->
     <header>
         <h1>Unitivity</h1>
         <nav>
@@ -20,19 +19,55 @@
     </header>
 
     <main>
-        <!-- Django Flash Messages Section -->
         {% if messages %}
         <div class="messages-container">
             {% for message in messages %}
-            <div class="alert alert-{{ message.tags }}">
-                {{ message }}
-            </div>
+            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
             {% endfor %}
         </div>
         {% endif %}
 
-        <h2>Project Discovery Feed</h2>
-        <p>Explore projects looking for active collaborators. Like a project or join the team below!</p>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <h2>Project Discovery Feed</h2>
+            <a href="{% url 'create_project' %}"
+                style="padding: 0.6rem 1.2rem; background: #2563eb; color: #fff; text-decoration: none; border-radius: 6px; font-weight: 600;">
+                + New Project
+            </a>
+        </div>
+
+        <!-- Aggregate Summary Bar (SQL AVG and COUNT) -->
+        <div
+            style="background: #f1f5f9; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; display: flex; gap: 2rem;">
+            <div>
+                <strong>Total Projects:</strong> {{ stats.total_projects }}
+            </div>
+            <div>
+                <strong>Average Progress:</strong> {{ stats.avg_progress|default:0|floatformat:1 }}%
+            </div>
+        </div>
+
+        <!-- Date Range Filter Controls -->
+        <div style="margin-bottom: 1.5rem;">
+            <strong>Filter by Date:</strong>
+        
+            {% if not filter_days %}
+            <strong style="margin: 0 0.5rem;">All Time</strong> |
+            {% else %}
+            <a href="{% url 'discovery_feed' %}" style="margin: 0 0.5rem;">All Time</a> |
+            {% endif %}
+        
+            {% if filter_days == "30" %}
+            <strong style="margin: 0 0.5rem;">Past 30 Days</strong> |
+            {% else %}
+            <a href="{% url 'discovery_feed' %}?days=30" style="margin: 0 0.5rem;">Past 30 Days</a> |
+            {% endif %}
+        
+            {% if filter_days == "7" %}
+            <strong style="margin: 0 0.5rem;">Past 7 Days</strong>
+            {% else %}
+            <a href="{% url 'discovery_feed' %}?days=7" style="margin: 0 0.5rem;">Past 7 Days</a>
+            {% endif %}
+        </div>
 
         <!-- Dynamic Database Loop -->
         {% for project in projects %}
@@ -40,13 +75,15 @@
             <h3>
                 <a href="{% url 'project_detail' project.id %}">{{ project.title }}</a>
             </h3>
-            <p><strong>Created by:</strong> {{ project.creator.get_full_name|default:project.creator.username }}</p>
+            <p><strong>Created by:</strong> {{ project.creator.get_full_name|default:project.creator.username }} ({{
+                project.created_at|date:"M d, Y" }})</p>
             <p>{{ project.description }}</p>
             <p>
+                <strong>Progress:</strong> {{ project.progress }}% |
                 <strong>Likes:</strong> {{ project.total_likes }} |
                 <strong>Collaborators:</strong>
                 {% for member in project.collaborators.all %}
-                {{ member.username }}{% if not forloop.last %}, {% endif %}
+                {{ member.get_full_name|default:member.username }}{% if not forloop.last %}, {% endif %}
                 {% empty %}
                 None yet
                 {% endfor %}
@@ -69,9 +106,24 @@
                 </summary>
                 <div style="margin-top: 0.5rem;">
                     {% for comment in project.comments.all %}
-                    <div style="margin-bottom: 0.5rem; padding: 0.5rem; background: #f1f5f9; border-radius: 6px;">
-                        <small><strong>{{ comment.author.username }}</strong> &bull; {{ comment.created_at|timesince }}
-                            ago</small>
+                    <div
+                        style="margin-bottom: 0.5rem; padding: 0.5rem; background: #f8fafc; border-radius: 6px; border: 1px solid #e2e8f0;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <small><strong>{{ comment.author.get_full_name|default:comment.author.username }}</strong>
+                                &bull; {{ comment.created_at|timesince }} ago</small>
+
+                            {% if comment.author == current_user or current_user.is_superuser %}
+                            <form method="POST" style="margin: 0;">
+                                {% csrf_token %}
+                                <input type="hidden" name="project_id" value="{{ project.id }}">
+                                <input type="hidden" name="comment_id" value="{{ comment.id }}">
+                                <button type="submit" name="action" value="delete_comment"
+                                    style="color: #dc2626; background: none; border: none; cursor: pointer; font-size: 0.8rem;">
+                                    Delete
+                                </button>
+                            </form>
+                            {% endif %}
+                        </div>
                         <p style="margin: 0.25rem 0 0 0;">{{ comment.content }}</p>
                     </div>
                     {% empty %}
@@ -91,7 +143,7 @@
             </details>
         </article>
         {% empty %}
-        <p>No projects found in the database. Add one through the admin panel!</p>
+        <p>No projects match your filter. Try selecting "All Time" or click <strong>+ New Project</strong> above.</p>
         {% endfor %}
     </main>
 </body>
