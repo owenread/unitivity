@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 
@@ -5,7 +6,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ project.title|default:"Project Details" }} - Unitivity</title>
-    {% load static %}
     <link rel="stylesheet" href="{% static 'core/styles.css' %}">
 </head>
 
@@ -19,31 +19,60 @@
     </header>
 
     <main>
-        <!-- Fallback Verification: Checks if target project object exists -->
+        {% if messages %}
+        <div class="messages-container">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
         {% if project %}
         <article>
             <h2>{{ project.title }}</h2>
-            <p><strong>Lead Creator:</strong> {{ project.creator }}</p>
+            <p><strong>Lead Creator:</strong> {{ project.creator.get_full_name|default:project.creator.username }}</p>
             <p><strong>Project Overview:</strong> {{ project.description }}</p>
             <p><strong>Current Timeline:</strong> {{ project.timeline }}</p>
-            <p><strong>Development Progress:</strong> {{ project.progress }}</p>
-            <p><strong>Total Likes:</strong> {{ project.likes }}</p>
+            <p><strong>Development Progress:</strong> {{ project.progress }}%</p>
+            <p><strong>Total Likes:</strong> {{ project.total_likes }}</p>
 
             <h3>Active Team Members</h3>
             <ul>
-                {% for member in project.collaborators %}
-                <li>{{ member }}</li>
+                <!-- .all converts the ManyRelatedManager to an iterable queryset -->
+                {% for member in project.collaborators.all %}
+                <li>{{ member.get_full_name|default:member.username }}</li>
                 {% empty %}
                 <li>No collaborators listed yet. Be the first to join!</li>
                 {% endfor %}
             </ul>
+
+            <!-- Project Comments Thread -->
+            <h3>Discussion</h3>
+            <div class="comments-section">
+                {% for comment in project.comments.all %}
+                <div
+                    style="margin-bottom: 0.75rem; padding: 0.75rem; background: #f8fafc; border-radius: 6px; border: 1px solid #e2e8f0;">
+                    <small>
+                        <strong>{{ comment.author.get_full_name|default:comment.author.username }}</strong> &bull;
+                        {{ comment.created_at|timesince }} ago
+                    </small>
+                    <p style="margin: 0.25rem 0 0 0;">{{ comment.content }}</p>
+                </div>
+                {% empty %}
+                <p>No comments on this project yet.</p>
+                {% endfor %}
+            </div>
         </article>
         {% else %}
         <h2>Project Not Found</h2>
         <p>The requested project detail page could not be located.</p>
         {% endif %}
 
-        <p><a href="{% url 'discovery_feed' %}">&larr; Return to Discovery Feed</a></p>
+        <p style="margin-top: 2rem;">
+            <a href="{% url 'discovery_feed' %}">&larr; Return to Discovery</a>
+        </p>
     </main>
 </body>
 

@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 
@@ -5,8 +6,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Unitivity - Discovery Feed</title>
-    <!-- Load static template tag library to handle local CSS asset paths -->
-    {% load static %}
     <link rel="stylesheet" href="{% static 'core/styles.css' %}">
 </head>
 
@@ -21,7 +20,7 @@
     </header>
 
     <main>
-        <!-- Django Flash Messages Section: Displays action confirmation banners -->
+        <!-- Django Flash Messages Section -->
         {% if messages %}
         <div class="messages-container">
             {% for message in messages %}
@@ -35,38 +34,64 @@
         <h2>Project Discovery Feed</h2>
         <p>Explore projects looking for active collaborators. Like a project or join the team below!</p>
 
-        <!-- Dynamic Loop: Iterates over the list of project dictionaries passed from discovery_feed view -->
+        <!-- Dynamic Database Loop -->
         {% for project in projects %}
-        <article>
+        <article style="margin-bottom: 2rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 1.5rem;">
             <h3>
-                <!-- Detail View Link: Passes project.id as a URL parameter to render the specific project route -->
                 <a href="{% url 'project_detail' project.id %}">{{ project.title }}</a>
             </h3>
-            <p><strong>Created by:</strong> {{ project.creator }}</p>
+            <p><strong>Created by:</strong> {{ project.creator.get_full_name|default:project.creator.username }}</p>
             <p>{{ project.description }}</p>
             <p>
-                <strong>Likes:</strong> {{ project.likes }} |
+                <strong>Likes:</strong> {{ project.total_likes }} |
                 <strong>Collaborators:</strong>
-                {% for member in project.collaborators %}
-                {{ member }}{% if not forloop.last %}, {% endif %}
+                {% for member in project.collaborators.all %}
+                {{ member.username }}{% if not forloop.last %}, {% endif %}
                 {% empty %}
-                None
+                None yet
                 {% endfor %}
             </p>
 
-            <!-- Interactive Form: Submits POST actions to trigger like or join logic in views.py -->
+            <!-- Actions: Like and Join -->
             <form method="POST">
                 {% csrf_token %}
-                <!-- Hidden field tracking which project target receives the action -->
                 <input type="hidden" name="project_id" value="{{ project.id }}">
-
-                <!-- Action Buttons: Evaluated by views.py via request.POST.get('action') -->
-                <button type="submit" name="action" value="like">👍 Like</button>
+                <button type="submit" name="action" value="like">
+                    👍 Like ({{ project.total_likes }})
+                </button>
                 <button type="submit" name="action" value="join">🤝 Join Project</button>
             </form>
+
+            <!-- Collapsible Comment Drawer -->
+            <details class="comment-drawer" style="margin-top: 1rem;">
+                <summary style="cursor: pointer; font-weight: bold;">
+                    💬 Comments ({{ project.comments.count }})
+                </summary>
+                <div style="margin-top: 0.5rem;">
+                    {% for comment in project.comments.all %}
+                    <div style="margin-bottom: 0.5rem; padding: 0.5rem; background: #f1f5f9; border-radius: 6px;">
+                        <small><strong>{{ comment.author.username }}</strong> &bull; {{ comment.created_at|timesince }}
+                            ago</small>
+                        <p style="margin: 0.25rem 0 0 0;">{{ comment.content }}</p>
+                    </div>
+                    {% empty %}
+                    <p><small>No comments yet.</small></p>
+                    {% endfor %}
+
+                    <!-- Post Comment Form -->
+                    <form method="POST" style="margin-top: 0.75rem;">
+                        {% csrf_token %}
+                        <input type="hidden" name="project_id" value="{{ project.id }}">
+                        <input type="hidden" name="action" value="comment">
+                        <input type="text" name="comment_content" placeholder="Write a comment..." required
+                            style="padding: 0.4rem; width: 70%;">
+                        <button type="submit">Post</button>
+                    </form>
+                </div>
+            </details>
         </article>
         {% empty %}
-        <p>No projects found at this time.</p>
+        <p>No projects found in the database. Add one through the admin panel!</p>
         {% endfor %}
     </main>
 </body>

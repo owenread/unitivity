@@ -73,10 +73,15 @@ WSGI_APPLICATION = 'mysite.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.1/ref/settings/#databases
 
+# Link the database to Postgres with postgres credentials
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'unitivity_db',
+        'USER': 'unitivity_admin',
+        'PASSWORD': 'UnitivityPass2026!',
+        'HOST': 'localhost',
+        'PORT': '5432',
     }
 }
 
