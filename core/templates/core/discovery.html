@@ -49,19 +49,19 @@
         <!-- Date Range Filter Controls -->
         <div style="margin-bottom: 1.5rem;">
             <strong>Filter by Date:</strong>
-        
+
             {% if not filter_days %}
             <strong style="margin: 0 0.5rem;">All Time</strong> |
             {% else %}
             <a href="{% url 'discovery_feed' %}" style="margin: 0 0.5rem;">All Time</a> |
             {% endif %}
-        
+
             {% if filter_days == "30" %}
             <strong style="margin: 0 0.5rem;">Past 30 Days</strong> |
             {% else %}
             <a href="{% url 'discovery_feed' %}?days=30" style="margin: 0 0.5rem;">Past 30 Days</a> |
             {% endif %}
-        
+
             {% if filter_days == "7" %}
             <strong style="margin: 0 0.5rem;">Past 7 Days</strong>
             {% else %}
@@ -75,10 +75,11 @@
             <h3>
                 <a href="{% url 'project_detail' project.id %}">{{ project.title }}</a>
             </h3>
-            <p><strong>Created by:</strong> {{ project.creator.get_full_name|default:project.creator.username }} ({{
-                project.created_at|date:"M d, Y" }})</p>
-            <p>{{ project.description }}</p>
-            <p>
+            <!-- Not a super important comment but I did decide to put the data on it's own line because Django couldn't understand the template format and I didn't want to install an extension right now -->
+            <p><strong>Created by:</strong> {{ project.creator.get_full_name|default:project.creator.username }}</p>
+            <p style="margin-top: -0.5rem; color: #64748b; font-size: 0.85rem;">
+                Posted on {{ project.created_at|date:"M d, Y" }}
+            </p>
                 <strong>Progress:</strong> {{ project.progress }}% |
                 <strong>Likes:</strong> {{ project.total_likes }} |
                 <strong>Collaborators:</strong>
