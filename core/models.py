@@ -24,7 +24,7 @@ def create_or_update_user_profile(sender, instance, created, **kwargs):
     else:
         instance.profile.save()
 
-# Defining the profile class
+# Defining the project class
 class Project(models.Model):
     """Core Project entity representing collaborative initiatives."""
     title = models.CharField(max_length=200)

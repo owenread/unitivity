@@ -75,7 +75,7 @@
             <h3>
                 <a href="{% url 'project_detail' project.id %}">{{ project.title }}</a>
             </h3>
-            <!-- Not a super important comment but I did decide to put the data on it's own line because Django couldn't understand the template format and I didn't want to install an extension right now -->
+            <!-- Not a super important comment but I did decide to put the date on it's own line because Django couldn't understand the template format and I didn't want to install an extension right now -->
             <p><strong>Created by:</strong> {{ project.creator.get_full_name|default:project.creator.username }}</p>
             <p style="margin-top: -0.5rem; color: #64748b; font-size: 0.85rem;">
                 Posted on {{ project.created_at|date:"M d, Y" }}
