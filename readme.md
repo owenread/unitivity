@@ -7,7 +7,7 @@ Unitivity is a collaborative project management and discovery web platform desig
 I wrote this software to demonstrate how to model multi-table relational databases, execute structured database operations (Insert, Select, Update, Delete), perform multi-table joins, and calculate statistical aggregates on numerical data using a PostgreSQL backend.
 
 [Software Demo Video](https://youtu.be/58SHd3aTunI)
-[Software Demo Video Module 2](https://youtu.be/58SHd3aTunI)
+[Software Demo Video Module 2](https://youtu.be/ruZhG0zNs_4)
 
 # Relational Database
 
