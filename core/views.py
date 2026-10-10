@@ -243,4 +243,14 @@ def delete_task_view(request, project_id, task_id):
     if request.method == "POST":
         firestore_service.delete_task(task_id)
         messages.success(request, "Task deleted from Firestore.")
+        
+    return redirect("project_detail", project_id=project_id)
+def add_task_comment_view(request, project_id, task_id):
+    if request.method == "POST":
+        current_user = get_current_user(request)
+        comment_text = request.POST.get("comment", "").strip()
+        author = current_user.username if current_user else "Anonymous"
+        if comment_text:
+            firestore_service.add_task_comment(task_id, author, comment_text)
+            messages.success(request, "Comment added to Firestore task.")
     return redirect("project_detail", project_id=project_id)

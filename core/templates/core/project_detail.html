@@ -112,36 +112,65 @@
                 <!-- READ, UPDATE, and DELETE Task List -->
                 <div style="display: flex; flex-direction: column; gap: 0.5rem;">
                     {% for task in tasks %}
-                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px;">
-                        <div>
-                            <strong>{{ task.title }}</strong>
-                            <span style="font-size: 0.8rem; background: #e2e8f0; color: #334155; padding: 0.15rem 0.4rem; border-radius: 4px; margin-left: 0.5rem;">
-                                {{ task.priority }}
-                            </span>
-                            <small style="color: #64748b; margin-left: 0.5rem;">Assigned: {{ task.assigned_to }}</small>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 0.5rem;">
-                            <!-- UPDATE Task Status -->
-                            <form method="POST" action="{% url 'update_task' project.id task.id %}" style="margin: 0;">
-                                {% csrf_token %}
-                                <select name="status" onchange="this.form.submit()"
-                                    style="padding: 0.25rem 0.5rem; border-radius: 4px; border: 1px solid #cbd5e1; font-size: 0.85rem;">
-                                    <option value="todo" {% if task.status == 'todo' %}selected{% endif %}>To Do</option>
-                                    <option value="in_progress" {% if task.status == 'in_progress' %}selected{% endif %}>In Progress</option>
-                                    <option value="done" {% if task.status == 'done' %}selected{% endif %}>Done</option>
-                                </select>
-                            </form>
+                    {% for task in tasks %}
+<div style="padding: 0.75rem; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; margin-bottom: 0.75rem;">
+    <!-- Task Row Header -->
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <strong>{{ task.title }}</strong>
+            <span style="font-size: 0.8rem; background: #e2e8f0; color: #334155; padding: 0.15rem 0.4rem; border-radius: 4px; margin-left: 0.5rem;">
+                {{ task.priority }}
+            </span>
+            <small style="color: #64748b; margin-left: 0.5rem;">Assigned: {{ task.assigned_to }}</small>
+        </div>
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <!-- UPDATE Task Status -->
+            <form method="POST" action="{% url 'update_task' project.id task.id %}" style="margin: 0;">
+                {% csrf_token %}
+                <select name="status" onchange="this.form.submit()"
+                    style="padding: 0.25rem 0.5rem; border-radius: 4px; border: 1px solid #cbd5e1; font-size: 0.85rem;">
+                    <option value="todo" {% if task.status == 'todo' %}selected{% endif %}>To Do</option>
+                    <option value="in_progress" {% if task.status == 'in_progress' %}selected{% endif %}>In Progress</option>
+                    <option value="done" {% if task.status == 'done' %}selected{% endif %}>Done</option>
+                </select>
+            </form>
 
-                            <!-- DELETE Task -->
-                            <form method="POST" action="{% url 'delete_task' project.id task.id %}" style="margin: 0;">
-                                {% csrf_token %}
-                                <button type="submit"
-                                    style="background: transparent; color: #dc2626; border: 1px solid #fecaca; padding: 0.25rem 0.5rem; border-radius: 4px; cursor: pointer; font-size: 0.85rem;">
-                                    Delete
-                                </button>
-                            </form>
-                        </div>
-                    </div>
+            <!-- DELETE Task -->
+            <form method="POST" action="{% url 'delete_task' project.id task.id %}" style="margin: 0;">
+                {% csrf_token %}
+                <button type="submit"
+                    style="background: transparent; color: #dc2626; border: 1px solid #fecaca; padding: 0.25rem 0.5rem; border-radius: 4px; cursor: pointer; font-size: 0.85rem;">
+                    Delete
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Related Table: Task Comments (Child Collection) -->
+    <div style="margin-top: 0.75rem; padding-left: 1rem; border-left: 3px solid #cbd5e1;">
+        {% for c in task.comments %}
+        <div style="font-size: 0.85rem; color: #475569; margin-bottom: 0.25rem;">
+            <strong>{{ c.author }}:</strong> {{ c.comment }}
+        </div>
+        {% empty %}
+        <div style="font-size: 0.8rem; color: #94a3b8; font-style: italic;">No comments on this task yet.</div>
+        {% endfor %}
+
+        <!-- Insert Task Comment Form -->
+        <form method="POST" action="{% url 'add_task_comment' project.id task.id %}" style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+            {% csrf_token %}
+            <input type="text" name="comment" placeholder="Add a comment to this task..." required 
+                style="font-size: 0.8rem; padding: 0.25rem 0.5rem; border: 1px solid #cbd5e1; border-radius: 4px; flex: 1;">
+            <button type="submit" 
+                style="font-size: 0.8rem; padding: 0.25rem 0.5rem; background: #64748b; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                Post Comment
+            </button>
+        </form>
+    </div>
+</div>
+{% empty %}
+<p style="color: #64748b; margin: 0; font-size: 0.95rem;">No tasks logged in Firestore for this project yet.</p>
+{% endfor %}
                     {% empty %}
                     <p style="color: #64748b; margin: 0; font-size: 0.95rem;">No tasks logged in Firestore for this project yet.</p>
                     {% endfor %}

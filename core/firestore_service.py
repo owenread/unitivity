@@ -31,7 +31,7 @@ def add_task_comment(task_id: str, author: str, comment: str) -> str:
 
 # --- READ (Query & Filter) ---
 def get_tasks_for_project(project_id: int, status_filter=None):
-    """Queries tasks for a project, with optional status filtering."""
+    """Queries tasks for a project and joins related task_comments."""
     query = db.collection("tasks").where(filter=FieldFilter("project_id", "==", int(project_id)))
     
     if status_filter and status_filter != "all":
@@ -41,6 +41,12 @@ def get_tasks_for_project(project_id: int, status_filter=None):
     for doc in query.stream():
         data = doc.to_dict()
         data["id"] = doc.id
+        
+        # Query child comments from the related collection
+        comments_query = db.collection("task_comments").where(
+            filter=FieldFilter("task_id", "==", doc.id)
+        )
+        data["comments"] = [c.to_dict() for c in comments_query.stream()]
         tasks.append(data)
     return tasks
 
