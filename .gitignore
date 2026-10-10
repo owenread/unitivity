@@ -1,0 +1,14 @@
+# Firebase credentials
+firebase_credentials.json
+
+# Environment variables
+.env
+
+# Python cache & virtualenv
+__pycache__/
+*.pyc
+venv/
+.venv/
+
+# Local database
+db.sqlite3

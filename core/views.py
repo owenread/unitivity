@@ -1,27 +1,31 @@
 """
-Core Application Views & Business Logic (PostgreSQL Connected).
-Full CRUD implementation:
-- CREATE: create_project, Comment.objects.create
-- READ: discovery_feed, project_detail (with date filtering)
-- UPDATE: profile_view, project likes/joins
-- DELETE: delete_project, delete_comment
-- AGGREGATE: Avg('progress'), Count('id')
+Core Application Views & Business Logic.
+- Relational (PostgreSQL/SQLite): Projects, Profiles, Comments, Likes, Collaborations
+- Cloud NoSQL (Google Cloud Firestore): Project Tasks CRUD & Filter Queries
 """
 
 from datetime import timedelta
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.models import User
+from django.contrib.auth.decorators import login_required
 from django.db.models import Q, Avg, Count
 from django.utils import timezone
+
 from .models import Project, Profile, Comment
+from . import firestore_service
 
 
 def get_current_user(request):
+    """Fallback helper to return logged-in user or the primary test user."""
     if request.user.is_authenticated:
         return request.user
     return User.objects.first()
 
+
+# ==========================================
+# RELATIONAL DATABASE VIEWS (PostgreSQL/SQLite)
+# ==========================================
 
 def discovery_feed(request):
     current_user = get_current_user(request)
@@ -101,7 +105,7 @@ def discovery_feed(request):
 
 
 def create_project(request):
-    """CREATE: Form view to insert a new project into PostgreSQL."""
+    """CREATE: Form view to insert a new project into the relational database."""
     current_user = get_current_user(request)
     if not current_user:
         messages.error(request, "You must be signed in to create a project.")
@@ -133,11 +137,10 @@ def create_project(request):
 
 
 def delete_project(request, project_id):
-    """DELETE: Permanently removes a project record from PostgreSQL."""
+    """DELETE: Permanently removes a project record from the relational database."""
     current_user = get_current_user(request)
     project = get_object_or_404(Project, id=project_id)
 
-    # Restrict deletion strictly to the project creator or superuser
     if project.creator == current_user or (current_user and current_user.is_superuser):
         title = project.title
         project.delete()
@@ -148,20 +151,8 @@ def delete_project(request, project_id):
     return redirect('discovery_feed')
 
 
-def project_detail(request, project_id):
-    project = get_object_or_404(
-        Project.objects.prefetch_related('collaborators', 'comments__author').select_related('creator'),
-        id=project_id
-    )
-    current_user = get_current_user(request)
-    return render(request, 'core/project_detail.html', {
-        'project': project,
-        'current_user': current_user,
-    })
-
-
 def profile_view(request):
-    """UPDATE: Modifies existing user and profile records in PostgreSQL."""
+    """UPDATE: Modifies existing user and profile records."""
     current_user = get_current_user(request)
     if not current_user:
         messages.error(request, "No active user found.")
@@ -196,3 +187,60 @@ def profile_view(request):
         'my_projects': my_projects,
     }
     return render(request, 'core/profile.html', context)
+
+
+# ==========================================
+# HYBRID & CLOUD FIRESTORE VIEWS
+# ==========================================
+
+def project_detail(request, project_id):
+    """Combines Relational Project entity with Firestore Task documents."""
+    project = get_object_or_404(
+        Project.objects.prefetch_related('collaborators', 'comments__author').select_related('creator'),
+        id=project_id
+    )
+    current_user = get_current_user(request)
+    status_filter = request.GET.get("status")
+
+    # Cloud Firestore Query with optional status filtering
+    tasks = firestore_service.get_tasks_for_project(project_id, status_filter=status_filter)
+
+    return render(request, 'core/project_detail.html', {
+        'project': project,
+        'current_user': current_user,
+        'tasks': tasks,
+        'current_filter': status_filter or 'all',
+    })
+
+
+def create_task_view(request, project_id):
+    """CREATE: Inserts a new task document into Cloud Firestore."""
+    if request.method == "POST":
+        current_user = get_current_user(request)
+        title = request.POST.get("title", "").strip()
+        default_username = current_user.username if current_user else "Anonymous"
+        assigned_to = request.POST.get("assigned_to", default_username).strip()
+        priority = request.POST.get("priority", "medium")
+
+        if title:
+            firestore_service.create_task(project_id, title, assigned_to, priority)
+            messages.success(request, "Task created in Cloud Firestore.")
+    return redirect("project_detail", project_id=project_id)
+
+
+def update_task_view(request, project_id, task_id):
+    """UPDATE: Modifies task status in Cloud Firestore."""
+    if request.method == "POST":
+        new_status = request.POST.get("status")
+        if new_status:
+            firestore_service.update_task_status(task_id, new_status)
+            messages.success(request, "Task updated in Firestore.")
+    return redirect("project_detail", project_id=project_id)
+
+
+def delete_task_view(request, project_id, task_id):
+    """DELETE: Removes task and cascading comments from Cloud Firestore."""
+    if request.method == "POST":
+        firestore_service.delete_task(task_id)
+        messages.success(request, "Task deleted from Firestore.")
+    return redirect("project_detail", project_id=project_id)

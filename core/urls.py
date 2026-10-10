@@ -21,4 +21,10 @@ urlpatterns = [
     
     # Route: User Profile & Bio Management (http://127.0.0.1:8000/profile/)
     path('profile/', views.profile_view, name='profile'),
+
+    path("project/<int:project_id>/task/create/", views.create_task_view, name="create_task"),
+    path("project/<int:project_id>/task/<str:task_id>/update/", views.update_task_view, name="update_task"),
+    path("project/<int:project_id>/task/<str:task_id>/delete/", views.delete_task_view, name="delete_task"),
+
+    
 ]
