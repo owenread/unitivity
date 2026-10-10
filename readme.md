@@ -83,3 +83,34 @@ In the spirit of Kaizen and continuous iteration, planned improvements and featu
 * **Advanced Search and Tag Filtering:** Enhance the Discovery Feed with multi-tag filtering (e.g., tech stack, project stage, needed roles) and full-text keyword search.
 * **Role-Based Permissions:** Refine access controls so project creators can review join requests, assign administrative privileges, or designate custom team roles.
 * **Automated Database Backup Routine:** Create a scheduled cron task or Django management command to generate automated PostgreSQL `pg_dump` backups.
+
+
+# Unitivity Module 3 - Cloud Database Module (Google Cloud Firestore)
+
+## Overview
+Unitivity utilizes Google Cloud Firestore to power a real-time, document-oriented task tracking and collaboration layer integrated into a full-stack Django architecture.
+
+## Cloud Database
+* **Database Engine:** Google Cloud Firestore (Standard Edition, multi-region `nam5`)
+* **Access Method:** Python Firebase Admin SDK (`firebase-admin`)
+
+## Data Structure
+* **`tasks` (Collection):**
+  * `id` (Document ID)
+  * `project_id` (Integer — references relational `Project.id`)
+  * `title` (String)
+  * `assigned_to` (String — username)
+  * `status` (String — `todo`, `in_progress`, `done`)
+  * `priority` (String — `low`, `medium`, `high`)
+  * `created_at` (Timestamp)
+* **`task_comments` (Collection - Related Table):**
+  * `task_id` (String — foreign key referencing `tasks` Document ID)
+  * `author` (String)
+  * `comment` (String)
+  * `created_at` (Timestamp)
+
+## Demonstrated Operations
+* **CREATE:** Inserting new task documents with `db.collection('tasks').document().set(...)`.
+* **READ / QUERY:** Querying tasks filtered by `project_id` and filtered by `status` using `FieldFilter`.
+* **UPDATE:** Modifying task workflow states via `task_ref.update(...)`.
+* **DELETE:** Removing tasks and cascading deletes to related comments.
